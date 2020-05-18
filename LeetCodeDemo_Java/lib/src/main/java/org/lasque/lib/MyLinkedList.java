@@ -28,7 +28,9 @@ class MyLinkedList {
      */
     public int get(int index) {
         if (index >= size || index < 0) return -1;
-        return getNodeWithIndex(index).value;
+        if (index == 0) return mHeadNode.value;
+        if (index == size - 1) return mTailNode.value;
+        return getNodeWithIndex(index) == null ? -1 : getNodeWithIndex(index).value;
     }
 
     /**
@@ -61,42 +63,84 @@ class MyLinkedList {
             node.previous = mTailNode;
             mTailNode = node;
         }
+        size++;
     }
 
     /**
      * Add a node of value val before the index-th node in the linked list. If index equals to the length of linked list, the node will be appended to the end of linked list. If index is greater than the length, the node will not be inserted.
      */
     public void addAtIndex(int index, int val) {
-        Node indexNode = getNodeWithIndex(index);
-        if (indexNode == null) {
-            return;
+        if (index == 0){
+            addAtHead(val);
+        } else if (index == size){
+            addAtTail(val);
+        }else {
+            Node indexNode = getNodeWithIndex(index);
+            if (indexNode == null) {
+                return;
+            }
+            Node newNode = new Node(indexNode,indexNode.next,val);
+            if (indexNode.previous != null){
+                indexNode.previous.next = newNode;
+            }
+            newNode.previous = indexNode.previous;
+            newNode.next  = indexNode;
+            indexNode.previous = newNode;
+            size++;
         }
-        Node newNode = new Node(indexNode,indexNode.next,val);
-        indexNode.next.previous = newNode;
-        indexNode.next = newNode;
-        size++;
+
     }
 
     /**
      * Delete the index-th node in the linked list, if the index is valid.
      */
     public void deleteAtIndex(int index) {
-        Node targetNode = getNodeWithIndex(index);
-        if (targetNode == null) return;
-        targetNode.previous.next = targetNode.next;
+        if (index == 0 && size == 1){
+            mTailNode = null;
+            mHeadNode = null;
+        } else if (index == 0){
+            mHeadNode = mHeadNode.next;
+            mHeadNode.previous = null;
+        } else if (index == size -1){
+            mTailNode = mTailNode.previous;
+            mTailNode.next = null;
+        }else{
+            Node targetNode = getNodeWithIndex(index);
+            if (targetNode == null) return;
+            if (targetNode.previous != null){
+                targetNode.previous.next = targetNode.next;
+            }
+            if (targetNode.next != null){
+                targetNode.next.previous = targetNode.previous;
+            }
+            targetNode = null;
+        }
         size--;
     }
 
     private Node getNodeWithIndex(int index){
         if (mHeadNode == null || mTailNode == null) return null;
         if (index == 0) return mHeadNode;
-        int currentPos = 0;
-        Node node = mHeadNode;
-        while (node.hasNext()){
-            node = node.next;
-            currentPos ++;
-            if (currentPos == index) return node;
+        if (index == size - 1) return mTailNode;
+        int middle = (size / 2) + (size % 2);
+        if (index <= middle){
+            int currentPos = 0;
+            Node node = mHeadNode;
+            while (node.hasNext()){
+                node = node.next;
+                currentPos ++;
+                if (currentPos == index) return node;
+            }
+        } else {
+            int currentPos = size - 1;
+            Node node = mTailNode;
+            while (node.hasPrevious()){
+                node = node.previous;
+                currentPos --;
+                if (currentPos == index) return node;
+            }
         }
+
         return null;
     }
 
