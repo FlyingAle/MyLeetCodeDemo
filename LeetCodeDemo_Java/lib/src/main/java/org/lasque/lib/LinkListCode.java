@@ -21,7 +21,7 @@ package org.lasque.lib;
  * }
  */
 public class LinkListCode {
-    class ListNode {
+    static class ListNode {
         int val;
         ListNode next;
 
@@ -29,10 +29,124 @@ public class LinkListCode {
             val = x;
             next = null;
         }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
     }
 
     static public void main(String[] args) {
+        oddEvenList(new ListNode(1,new ListNode(2,new ListNode(3,new ListNode(4,new ListNode(5,null))))));
+    }
 
+    public ListNode mergeTwoLists(ListNode l1, ListNode l2) {
+        if (l1 == null) return l2;
+        if (l2 == null) return l1;
+        ListNode mainPoint = l1;
+        ListNode movePoint = l2;
+        while (movePoint != null){
+            ListNode node = movePoint.next;
+            ListNode next = mainPoint.next;
+            movePoint.next = mainPoint.next;
+            mainPoint.next = movePoint;
+            movePoint = node;
+            mainPoint = next;
+        }
+        return l1;
+    }
+
+    public boolean isPalindrome(ListNode head) {
+        if (head == null || head.next == null) return true;
+        ListNode fastPoint = head.next;
+        ListNode slowPoint = head;
+        //首先 使快速指针以二倍速前进到链表最后
+        while (fastPoint != null && fastPoint.next != null){
+            fastPoint = fastPoint.next.next;
+            slowPoint = slowPoint.next;
+        }
+        //重新定位快速指针到中间值后一位
+        fastPoint = slowPoint.next;
+        slowPoint.next = null;
+
+        //翻转快速指针所指的链表
+        ListNode reverse = null;
+        ListNode prev = null;
+        while (fastPoint != null){
+            prev = fastPoint;
+            fastPoint = fastPoint.next;
+            prev.next = reverse;
+            reverse = prev;
+        }
+        //比较原始链表前半部分与翻转后的链表
+        while (head != null && reverse != null){
+            if (head.val != reverse.val){
+                return false;
+            }
+            head = head.next;
+            reverse = reverse.next;
+        }
+        return true;
+    }
+
+    public static ListNode oddEvenList(ListNode head) {
+        if (head == null || head.next == null) return head;
+        ListNode fastPoint = head;
+        ListNode slowPoint = head;
+        ListNode currentEvenPoint = head.next;
+        int step = 1;
+        while (fastPoint != null){
+            if (fastPoint == slowPoint){
+                fastPoint = fastPoint.next;
+                step++;
+                continue;
+            }
+            if (step % 2 == 1){
+                ListNode preNode = slowPoint;
+                ListNode currentNode = fastPoint;
+                System.out.println();
+                slowPoint = fastPoint;
+                fastPoint = fastPoint.next;
+                step++;
+                currentEvenPoint.next = currentNode.next;
+                currentNode.next = preNode.next;
+                preNode.next = currentNode;
+                currentEvenPoint = currentEvenPoint.next;
+                continue;
+            }
+            fastPoint = fastPoint.next;
+            step++;
+        }
+        printLinkedList(head);
+        return head;
+    }
+
+    public ListNode removeElements(ListNode head, int val) {
+        while (head != null && head.val == val)
+            head = head.next;
+        if (head == null) return head;
+
+        ListNode cur = head;
+        while (cur.next != null){
+            if (cur.next.val == val){
+                cur.next = cur.next.next;
+            } else {
+                cur = cur.next;
+            }
+        }
+        return head;
+    }
+
+    public ListNode reverseList(ListNode head) {
+        if (head == null) return null;
+        if (head.next == null) return head;
+        ListNode currentHead = head;
+        ListNode currentItem = head.next;
+        ListNode nextItem = head;
+        while (nextItem != null){
+            nextItem = currentItem.next;
+            head.next = currentItem.next;
+            currentItem.next = currentHead;
+            currentHead = currentItem;
+            currentItem = nextItem;
+        }
+        return currentHead;
     }
 
     public ListNode removeNthFromEnd(ListNode head, int n) {
@@ -126,5 +240,12 @@ public class LinkListCode {
             fastPoint = fastPoint.next;
         }
         return slowPoint;
+    }
+
+    public static void printLinkedList(ListNode head){
+        System.out.println(head.val);
+        if (head.next !=null){
+            printLinkedList(head.next);
+        }
     }
 }
