@@ -9,6 +9,10 @@ package org.lasque.lib;
  * @Copyright (c) 2019 tusdk.com. All rights reserved.
  */
 
+import org.w3c.dom.Node;
+
+import java.util.HashMap;
+
 /**
  * Definition for singly-linked list.
  * class ListNode {
@@ -25,6 +29,8 @@ public class LinkListCode {
         int val;
         ListNode next;
 
+        ListNode() {}
+
         ListNode(int x) {
             val = x;
             next = null;
@@ -32,24 +38,213 @@ public class LinkListCode {
         ListNode(int val, ListNode next) { this.val = val; this.next = next; }
     }
 
+    static class Node{
+        public int val;
+        public Node prev;
+        public Node next;
+        public Node child;
+        public Node random;
+
+
+        public Node(int val) {
+            this.val = val;
+            this.next = null;
+            this.random = null;
+        }
+    }
+
     static public void main(String[] args) {
-        oddEvenList(new ListNode(1,new ListNode(2,new ListNode(3,new ListNode(4,new ListNode(5,null))))));
+        ListNode listNode = rotateRight(
+                new ListNode(1,new ListNode(2,new ListNode(3,new ListNode(4,new ListNode(5))))),
+                6
+        );
+        printLinkedList(listNode);
+    }
+
+    public static ListNode rotateRight(ListNode head, int k) {
+        if (head == null || head.next == null) return head;
+        ListNode point = head, last = head,newLastPoint = null;
+        int index = 0;
+        while (point.next != null){
+            point = point.next;
+            index ++;
+        }
+        last = point;
+
+        int newLastIndex = k <= index ? index - k : index - (k % (index +1));
+        if (newLastIndex == index) return head;
+        point = head;
+        int newIndex = 0;
+        while (point.next != null){
+            if (newIndex == newLastIndex) newLastPoint = point;
+            point = point.next;
+            newIndex ++;
+        }
+
+        last.next = head;
+        ListNode newHead = newLastPoint.next;
+        newLastPoint.next = null;
+        return newHead;
+    }
+
+    public Node copyRandomList(Node head) {
+        if (head == null) return null;
+        HashMap<Node,Node> nodeMap = new HashMap<>();
+        Node point = head;
+        do {
+            Node newPoint = new Node(point.val);
+            nodeMap.put(point, newPoint);
+            point = point.next;
+        } while (point != null);
+
+        point = head;
+        Node newHead = nodeMap.get(point);
+        Node newPoint = newHead;
+        while (point != null){
+            if (newPoint == null) break;
+            newPoint.next = nodeMap.get(point.next);
+            newPoint.random = nodeMap.get(point.random);
+            point = point.next;
+            newPoint = newPoint.next;
+        }
+        return newHead;
+    }
+
+    public Node flatten(Node head) {
+        if (head == null || head.next ==null && head.child == null) return head;
+        Node point = head;
+        while (point.next != null){
+            if (point.child !=null){
+                 Node childLast = traverseChild(point.child);
+                 Node next = point.next;
+                 childLast.next = next;
+                 next.prev = childLast;
+                 point.child.prev = point;
+                 point.next = point.child;
+                 point.child = null;
+            }
+            point = point.next;
+        }
+        if (point.child !=null){
+            Node childLast = traverseChild(point.child);
+            point.child.prev = point;
+            point.next = point.child;
+            point.child = null;
+        }
+        return head;
+    }
+
+    public Node traverseChild(Node head){
+        Node point = head;
+        while (point.next !=null){
+            if (point.child != null){
+                flatten(point);
+            }
+            point = point.next;
+        }
+        if (point.child != null){
+            flatten(point);
+        }
+        return point;
+    }
+
+    public Node getChildLast(Node head){
+        while (head.next != null){
+            head = head.next;
+        }
+        return head;
+    }
+
+
+
+    public static ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+        int l1Length = 1,l2Length = 1;
+        ListNode mainPoint = l1;
+        while (mainPoint.next != null){
+            l1Length++;
+            mainPoint = mainPoint.next;
+        }
+        mainPoint = l2;
+        while (mainPoint.next != null){
+            l2Length ++;
+            mainPoint = mainPoint.next;
+        }
+        int forCount = Math.min(l1Length,l2Length);
+        ListNode headNode = new ListNode();
+        ListNode currentNode = headNode;
+        int surPlus = -1;
+        for (int i = 0;i<forCount;i++){
+            int sum = l1.val + l2.val;
+            if (surPlus != -1){
+                sum += surPlus;
+                surPlus = -1;
+            }
+            if (i == 0){
+                if (sum >= 10){
+                    surPlus = sum / 10;
+                    currentNode.val = sum % 10;
+                } else {
+                    currentNode.val = sum;
+                }
+            } else {
+                ListNode newNode = new ListNode();
+                if (sum >= 10){
+                    surPlus = sum / 10;
+                    newNode.val = sum % 10;
+                } else {
+                    newNode.val = sum;
+                }
+                currentNode.next = newNode;
+                currentNode = currentNode.next;
+            }
+            l1 = l1.next;
+            l2 = l2.next;
+        }
+        currentNode.next = l1 != null ? l1 : l2;
+        if (surPlus != -1){
+            if (currentNode.next != null){
+                while (currentNode.next != null){
+                    currentNode = currentNode.next;
+                    if (surPlus != -1){
+                        currentNode.val += surPlus;
+                        if (currentNode.val >= 10){
+                            surPlus = currentNode.val / 10;
+                            currentNode.val = currentNode.val % 10;
+                        } else {
+                            surPlus = -1;
+                        }
+                    }
+                    if (currentNode.next == null && surPlus != -1){
+                        currentNode.next = new ListNode(surPlus);
+                        surPlus = -1;
+                    }
+                }
+            } else {
+                currentNode.next = new ListNode(surPlus);
+                surPlus = -1;
+            }
+        }
+
+        return headNode;
     }
 
     public ListNode mergeTwoLists(ListNode l1, ListNode l2) {
         if (l1 == null) return l2;
         if (l2 == null) return l1;
-        ListNode mainPoint = l1;
-        ListNode movePoint = l2;
-        while (movePoint != null){
-            ListNode node = movePoint.next;
-            ListNode next = mainPoint.next;
-            movePoint.next = mainPoint.next;
-            mainPoint.next = movePoint;
-            movePoint = node;
-            mainPoint = next;
+        ListNode main = l1.val < l2.val ? l1 : l2;
+        ListNode tamp2 = l1.val < l2.val ? l2 : l1;
+        ListNode tamp1;
+        ListNode result = main;
+        while (main.next != null){
+            if (main.next.val > tamp2.val){
+                tamp1 = main.next;
+                main.next = tamp2;
+                tamp2 = tamp1;
+            }
+            main = main.next;
         }
-        return l1;
+        main.next = tamp2;
+        return result;
     }
 
     public boolean isPalindrome(ListNode head) {
