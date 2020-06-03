@@ -5,6 +5,7 @@ import org.w3c.dom.Node;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -42,8 +43,8 @@ public class BinaryTreeCode {
         public String toString() {
             return "TreeNode{\n" +
                     "val=" + val +
-                    ", left=" + left +
-                    ", right=" + right +'\n' +
+                    "\n, left=" + left +
+                    ", \nright=" + right +'\n' +
                     '}';
         }
     }
@@ -95,13 +96,42 @@ public class BinaryTreeCode {
 
     }
 
+    private static final String spliter = ",";
+    private static final String NN = "X";
+
     // Encodes a tree to a single string.
     public static String serialize(TreeNode root) {
-        if (root == null) return "null";
-        String s = serializeHelperWithPre(root);
-        s += "&&";
-        s+= serializeHelperWithIn(root);
-        return s;
+        StringBuilder sb = new StringBuilder();
+        buildString(root,sb);
+        return sb.toString();
+    }
+
+    private static void buildString(TreeNode node,StringBuilder sb){
+        if (node == null){
+            sb.append(NN).append(spliter);
+        } else {
+            sb.append(node.val).append(spliter);
+            buildString(node.left,sb);
+            buildString(node.right,sb);
+        }
+    }
+
+    // Decodes your encoded data to tree.
+    public static TreeNode deserialize(String data) {
+        Deque<String> nodes = new LinkedList<>();
+        nodes.addAll(Arrays.asList(data.split(spliter)));
+        return buildTree(nodes);
+    }
+
+    private static TreeNode buildTree(Deque<String> nodes){
+        String val = nodes.remove();
+        if (val.equals(NN)) return null;
+        else {
+            TreeNode node = new TreeNode(Integer.valueOf(val));
+            node.left = buildTree(nodes);
+            node.right = buildTree(nodes);
+            return node;
+        }
     }
 
     public static String serializeHelperWithPre(TreeNode root){
@@ -126,17 +156,7 @@ public class BinaryTreeCode {
         }
     }
 
-    // Decodes your encoded data to tree.
-    public static TreeNode deserialize(String data) {
-        if (data.equals("null")) return null;
-        String[] nodes = data.split("&&");
-        String[] preList = nodes[0].trim().split(",");
-        int[] intPreList = stringToInt(preList);
-        String[] inList = nodes[1].trim().split(",");
-        int[] intInList = stringToInt(inList);
-        TreeNode root = buildTreeWithPreAndIn(intPreList,intInList);
-        return root;
-    }
+
 
     public static int[] stringToInt(String[] s){
         int[] ints = new int[s.length];
