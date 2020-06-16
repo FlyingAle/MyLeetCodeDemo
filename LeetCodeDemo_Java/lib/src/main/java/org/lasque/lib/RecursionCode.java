@@ -44,8 +44,180 @@ public class RecursionCode {
     static public void main(String[] args) {
         RecursionCode ex = new RecursionCode();
 //        ex.solveSudoku(test);
-        ex.combine(4,2);
-        System.out.println(ex.combineList);
+//        ex.combine(4,2);
+//        ex.generateParenthesis(6);
+        System.out.println(ex.permute(new int[]{2,1,4,5,6}));
+    }
+
+    private HashMap<Integer, char[]> phoneNumberMap = new HashMap<Integer, char[]>();
+
+
+    public List<String> letterCombinations(String digits) {
+        phoneNumberMap.put(1,new char[]{});
+        phoneNumberMap.put(2,new char[]{'a','b','c'});
+        phoneNumberMap.put(3,new char[]{'d','e','f'});
+        phoneNumberMap.put(4,new char[]{'g','h','i'});
+        phoneNumberMap.put(5,new char[]{'j','k','l'});
+        phoneNumberMap.put(6,new char[]{'m','n','o'});
+        phoneNumberMap.put(7,new char[]{'p','q','r','s'});
+        phoneNumberMap.put(8,new char[]{'t','u','v'});
+        phoneNumberMap.put(9,new char[]{'w','x','y','z'});
+        List<char[]> charList = new ArrayList<>();
+        int size = digits.length();
+        for (int i  = 0;i<size;i++){
+            charList.add(phoneNumberMap.get(Integer.valueOf(digits.charAt(i))));
+        }
+        letter(charList);
+    }
+
+    private void letter(List<char[]> list){
+        
+    }
+
+
+
+    public List<List<Integer>> permute(int[] nums) {
+//        permuteAddItem(nums);
+//        return allPermuteList;
+
+        List<List<Integer>> result = new ArrayList<>();
+        if (nums.length == 0) {
+            result.add(new ArrayList<Integer>());
+        }
+        else {
+            permutation(nums, 0, nums.length - 1, result);
+        }
+        return result;
+
+    }
+
+    public void permutation(int[] nums,int start,int end,List<List<Integer>> result){
+        if (start == end){
+            List<Integer> temp = new ArrayList<Integer>();
+            for (int i : nums){
+                temp.add(i);
+            }
+            result.add(temp);
+        }
+        for (int i = start; i <= end;i++){
+            swap(nums,start,i);
+            permutation(nums,start + 1,end,result);
+            swap(nums,start,i);
+        }
+    }
+
+    public void swap(int[] nums,int x,int y){
+        int temp = nums[x];
+        nums[x] = nums[y];
+        nums[y] = temp;
+    }
+
+
+    private List<Integer> currentPermuteList = new ArrayList<>();
+    private List<List<Integer>> allPermuteList = new ArrayList<>();
+    HashSet<Integer> useless = new HashSet<>();
+
+    private void permuteAddItem(int[] nums){
+        if (useless.size() == nums.length){
+            allPermuteList.add(new ArrayList<Integer>(currentPermuteList));
+        }
+        int size = nums.length;
+        for (int i = 0;i<size;i++){
+            if (!useless.contains(i)){
+                currentPermuteList.add(nums[i]);
+                useless.add(i);
+                permuteAddItem(nums);
+                currentPermuteList.remove(currentPermuteList.size() - 1);
+                useless.remove(i);
+            }
+        }
+    }
+
+    private int binary(int[] heights,int left,int right){
+        if (left > right) return 0;
+        if (left == right) return heights[left];
+
+        boolean increase = true,decrease = true;
+        int minIndex = left;
+        for (int i= left + 1;i<= right;i++){
+            if (heights[i] < heights[i-1]) increase = false;
+            if (heights[i] > heights[i-1]) decrease = false;
+            if (heights[i] < heights[minIndex]){
+                minIndex = i;
+            }
+        }
+
+        int res = 0;
+        if (decrease){
+            for (int i = right;i>=left;i--){
+                res = Math.max(res,heights[i] * (i - left + 1));
+            }
+        } else if (increase){
+            for (int i = left;i<=right;i++){
+                res = Math.max(res,heights[i] * (right - i + 1));
+            }
+        } else {
+            int l = binary(heights,left,minIndex - 1);
+            int r = binary(heights,minIndex + 1,right);
+            res = Math.max(Math.max(l,r),heights[minIndex] * (right - left + 1));
+        }
+        return res;
+    }
+
+
+    public int largestRectangleArea(int[] heights) {
+        int size = heights.length;
+        int maxSize = -1;
+        int width = 0;
+        for (int i = 0;i<size;i++){
+            for (int j = 0;j<size;j++){
+                if (heights[j]< heights[i]){
+                    if ((size - width) * heights[i] < maxSize || j > i){
+                        break;
+                    }
+                    if (j < i){
+                        width = 0;
+                    }
+                } else {
+                    width ++;
+                }
+            }
+            maxSize = Math.max(maxSize,heights[i] * width);
+            width = 0;
+        }
+        return maxSize;
+    }
+
+    private String mCurrent = "";
+    private List<String> parenthesisList = new ArrayList<>();
+
+    public List<String> generateParenthesis(int n) {
+        int leftCount = n,rightCount = n,complete = 0;
+        mCurrent += "(";
+        helper(leftCount -1,rightCount);
+        return parenthesisList;
+    }
+
+    private void helper(int leftCount,int rightCount){
+        if (rightCount == 0){
+            parenthesisList.add(mCurrent);
+            return;
+        }
+        if (leftCount == rightCount){
+            mCurrent += "(";
+            helper(leftCount - 1,rightCount);
+        } else if (leftCount < rightCount){
+            if (leftCount != 0){
+                mCurrent +="(";
+                helper(leftCount - 1,rightCount);
+                mCurrent = mCurrent.substring(0,mCurrent.lastIndexOf("("));
+            }
+            if (rightCount != 0){
+                mCurrent +=")";
+                helper(leftCount,rightCount - 1);
+                mCurrent = mCurrent.substring(0,mCurrent.lastIndexOf(")"));
+            }
+        }
     }
 
     public boolean check(TreeNode p ,TreeNode q){
